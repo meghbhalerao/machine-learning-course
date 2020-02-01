@@ -35,12 +35,14 @@ optimizer = optim.Adam(model.parameters(), lr = 0.01, betas = (0.9,0.999), weigh
 model.cpu()
 num_epochs = 100
 dataset_train = EMNIST(images_tr, labels_tr)
-train_loader = DataLoader(dataset_train,batch_size= 4,shuffle=True, num_workers=4)
+train_loader = DataLoader(dataset_train,batch_size= 1,shuffle=True, num_workers=4)
 dataset_valid = EMNIST_val(images_val, labels_val)
-val_loader = DataLoader(dataset_valid, batch_size = 4, shuffle = True, num_workers = 4)
+val_loader = DataLoader(dataset_valid, batch_size = 1, shuffle = True, num_workers = 4)
+acc_tmp = 0
 for ep in range(num_epochs):
     # Setting the model to train mode
     loss_agg = 0
+    acc = 0
     model.train
     for batch_idx, (subject) in enumerate(train_loader):
         # Load the subject and its ground truth
@@ -59,9 +61,16 @@ for ep in range(num_epochs):
         optimizer.step()
         loss = loss.detach().cpu().numpy()
         loss_agg = loss_agg + loss
+        output = output.detach().cpu().numpy()
+        mask = mask.detach().cpu().numpy()
+        tmp = np.zeros(output.shape)
+        tmp[:,np.argmax(output)] = 1
+        acc = acc + np.sum(tmp*mask)
     print("Train Loss for epoch :",ep,"  ",loss_agg/(batch_idx+1))
+    print("Accuracy of Training is: ", acc/(batch_idx+1))
     model.eval   
     loss_agg_val = 0
+    acc = 0
     for batch_idx, (subject) in enumerate(val_loader):
         with torch.no_grad():
             image = subject['image']
@@ -70,8 +79,17 @@ for ep in range(num_epochs):
             loss = loss_fn(output.double(), mask.double())
             loss = loss.detach().cpu().numpy()
             loss_agg_val = loss_agg_val + loss
-    print("Validation loss for epoch :",ep," ",loss_agg_val/(batch_idx+1))
+            output = output.detach().cpu().numpy()
+            mask = mask.detach().cpu().numpy()
+            tmp = np.zeros(output.shape)
+            tmp[:,np.argmax(output)] = 1
+            acc = acc + np.sum(tmp*mask)
 
+    print("Validation loss for epoch :",ep," ",loss_agg_val/(batch_idx+1))
+    print("Accuracy of Validation is: ", acc/(batch_idx+1))
+    if acc>acc_tmp:
+        acc_tmp = acc
+        torch.save(model,"mod.pt")
 
 
 
