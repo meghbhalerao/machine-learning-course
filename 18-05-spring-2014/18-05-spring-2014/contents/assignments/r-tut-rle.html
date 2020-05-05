@@ -1,0 +1,69 @@
+<html>
+<head>
+<title>18.05 R Tutorial: Run Length Encoding</title>
+<!-- <link href="r.css" rel="stylesheet" type="text/css" media="all" />-->
+
+<style type="text/css">
+.magenta {color:magenta;}
+.red {color:red;}
+.green {color:green;}
+.answerindent {position:relative; left:5ex;}
+.head {font-weight:bold; font-size:120%;}
+.prevnext {color:green;}
+.comment {color:maroon}
+
+pre.w {white-space: pre-wrap;}
+pre {white-space: pre-wrap;}
+div.doc {max-width:5.5in;}
+</style>
+</head>
+
+<body>
+
+<div class="doc">
+
+<h2>18.05 R Tutorial: Run Length Encoding</h2>
+
+This is a short tutorial to expand on the R reading questions. It will help you with one of the problems in pset 2.
+
+<h3>rle(x)</h3>
+<code><pre class="w">
+<span class="comment"># rle(x) stands for 'run length encoding'. It will be easiest to explain what this means through examples. It will help with pset 2 in the question that asks you to estimate the probability of runs in a sequence of Bernoulli (coin flips) trials.  A run means a streak of repeats of the same number.  </span>
+
+<span class="comment"># First let's make a small sequence where we can see the runs</span>
+&gt; x = c(1,1,1,2,3,3,3,1,1)
+<span class="comment"># We can describe this sequence as: three 1's, then one 2, then three 3's and two 1's.
+
+# This is exactly what rle(x) shows us</span>
+&gt; y = rle(x)
+&gt; y
+Run Length Encoding
+  lengths: int [1:4] 3 1 3 2
+  values : num [1:4] 1 2 3 1
+<span class="comment"># The values vector shows the values in the order they appeared. In this case the values of x are: 1, 2, 3, 1.
+
+# The lengths vector shows the lenghts of the runs of each value. In this case,
+three 1's, one 2, three 3's and two 1's.
+
+# To pick out just the lengths vector you use the syntax y$lengths</span>
+&gt; y$lengths
+[1] 3 1 3 2
+
+<span class="comment"># Let's look for streaks in a sequence of Bernoulli trials
+# We simulate 20 Bernoulli(.5) trials using rbinon(20,1,.5).</span>
+&gt; set.seed(1)
+&gt; y = rbinom(50,1,.5)  
+
+<span class="comment"># y is a vector of 0's and 1's of length 20. 
+# We can use rle() to find the length of the longest run in y</span>
+&gt; max(rle(y)$lengths)
+
+<span class="comment"># We can count the number of runs of more than 3.</span>
+&gt; sum(rle(y)$lengths > 3)
+
+<span class="comment"># We can count the number of runs of exactly length 3.</span>
+&gt; sum(rle(y)$lengths == 3)
+</pre></code>
+
+</body>
+</html>

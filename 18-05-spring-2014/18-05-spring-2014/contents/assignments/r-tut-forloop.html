@@ -1,0 +1,125 @@
+<html>
+<head>
+<title>18.05 R Tutorial: 'For Loops'</title>
+<!-- <link href="r.css" rel="stylesheet" type="text/css" media="all" />-->
+
+<style type="text/css">
+.magenta {color:magenta;}
+.red {color:red;}
+.green {color:green;}
+.answerindent {position:relative; left:5ex;}
+.head {font-weight:bold; font-size:120%;}
+.prevnext {color:green;}
+.comment {color:maroon;}
+.c {color:black} 
+.r {color:00a070;}
+pre.w {white-space: pre-wrap;}
+pre {white-space: pre-wrap;}
+div.doc {max-width:5.5in;}
+</style>
+</head>
+
+<body>
+
+<div class="doc">
+
+<h2>18.05 R Tutorial: For Loops</h2>
+
+This is a short tutorial to explain 'for loops'. 
+
+
+<h3>Color coding</h3>
+<pre><span class="comment"># Comments are in maroon</span>
+<span class="c">Code is in black</span>
+<span class="r">Results are in this green</span>
+
+<h3>rep()</h3><code><pre class="w">
+<span class="comment"># Often we want to start with a vector of 0's and then modify the entries in later code. R makes this easy with the replicate function rep()
+
+# rep(0, 10) makes a vector of of 10 zeros.</span>
+<span class="c">x = rep(0,10)
+x</span>
+<span class="r">[1] 0 0 0 0 0 0 0 0 0 0</span>
+
+<span class="comment"># rep() will replicate almost anything</span>
+<span class="c">x = rep(2,6)
+x</span>
+<span class="r">[1] 2 2 2 2 2 2</span>
+
+<span class="c">x = rep('abc',5)
+x</span>
+<span class="r">[1] "abc" "abc" "abc" "abc" "abc"</span>
+
+<span class="c">x = rep(1:4,5)
+x</span>
+<span class="r">[1] 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4</span>
+</pre></code>
+<h3>for(i in x)</h3><code><pre class="w">
+<span class="comment"># 'for loops' let us repeat (loop) through the elements in a vector and run the same code on each element
+
+# We will illustrate with examples 
+
+# Loop through the sequence 1 to 5 printing the square of each number</span>
+<span class='c'>for (j in 1:5)
+{
+  print(j^2)
+}</span>
+<span> class='r'>[1] 1
+[1] 4
+[1] 9
+[1] 16
+[1] 25</span>
+
+<span class="comment"># We can capture the results of our loop in a list
+# First we create a vector and then we fill in its values</span>
+<span class='c'>n = 5
+x = rep(0,n)
+for (j in 1:n)
+{
+  x[j] = j^2
+}
+x</span>
+<span> class='r'>[1]  1  4  9 16 25</span>
+
+<span class="comment"># You always wanted to know the sum of the first 100 squares.</span>
+<span class='c'>n = 100
+x = rep(0,n)
+for (j in 1:n)
+{
+  x[j] = j^2
+}
+sum(x)</span>
+<span> class='r'>[1] 338350</span>
+
+<span class="comment"># Let's use a for loop to estimate the average of squaring the result of a roll of a die.</span>
+<span class='c'>nsides = 6
+ntrials = 1000
+trials = rep(0,ntrials)
+for (j in 1:ntrials)
+{
+  trials[j] = sample(1:nsides,1)  <span class="comment"># We get one sample at a time</span>
+}
+mean(trials^2)</span>
+<span class='r'>[1] 15.207</span>
+
+<span class="comment"># Of course we could have done this simulation without a loop.</span>
+
+<span class="comment"># for loops are truly valuable when the calculation is more complicated and we can't do it exactly or with built in R functions.
+
+# Let's estimate the probability of a derangement in a permutation of 9 objects. (A derangement is a permutation where no element ends up in its original position.)</span>
+<span class='c'>n = 9
+x = 1:n
+ntrials = 10000
+trials = rep(0,ntrials)
+for (j in 1:ntrials)
+{
+    y = sample(x,n)
+    s = sum(y == x)  <span class="comments"># s = number of people in their original seat</span>
+    trials[j] = (s == 0) <span class="comments"># 1 if a derangement, 0 if not</span>
+}
+mean(trials)  <span class="comments"># mean(trials) = fraction that are 1's</span></span>
+<span class='r'>[1] 0.3697</span>
+</pre></code>
+
+</body>
+</html>
