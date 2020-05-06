@@ -1,2 +1,2 @@
 # Machine_Learning
-EE871_Codes for lab and assignments
+EE871 - Codes for lab and assignments
