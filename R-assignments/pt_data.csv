@@ -1,0 +1,4 @@
+"subject_name","temperature","flu_status","gender","blood","symptoms"
+"John Doe",98.1,FALSE,"MALE","O","SEVERE"
+"Jane Doe",98.6,FALSE,"FEMALE","AB","MILD"
+"Steve Graves",101.4,TRUE,"MALE","A","MODERATE"

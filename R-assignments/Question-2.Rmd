@@ -1,0 +1,328 @@
+---
+title: "Chapter 2"
+output: html_notebook
+---
+This notebook gives exmaples of different fundamental data structures used in Machine Learning. Also, some basic ways of interpreting data is given like some measures of central tendencies.
+
+## Vectors
+First we define a set of arrays below (self explanatory):
+```{r}
+subject_name <- c("John Doe", "Jane Doe", "Steve Graves")
+temperature <- c(98.1, 98.6, 101.4)
+flu_status <- c(FALSE, FALSE, TRUE)
+print(subject_name)
+```
+The elements of the vectors can be accessed as given below, the indexing starts at 1, not 0 as almost all other frameworks:
+```{r}
+temperature[2]
+```
+A range of values can be obtained using the (:) colon operator. For example:
+```{r}
+temperature[2:3]
+```
+If you want to exclude the second item, just access the element, but place an additional -ve sign before the element index:
+```{r}
+temperature[-2]
+```
+Also, custom inclusion or exclusion of elements can be done by using boolean operations. This can be thought of as a masking operation, which becomes useful in machine learning tasks:
+```{r}
+temperature[c(TRUE, TRUE, FALSE)]
+```
+
+## Factors
+A factor is a special case of vector that is solely used to represent
+categorical or ordinal variables. This can be thought of as an alternative to single character representation of classes. Below gives the example to create categorical variables (enclose inside a factor):
+```{r}
+gender <- factor(c("MALE", "FEMALE", "MALE"))
+gender
+```
+Above, the levels give the different types of the data present. Sometimes all available labels might not be present in a dataset, since the dataset might be small. We can define custom labels as follows:
+```{r}
+blood <- factor(c("O", "AB", "A"),
+levels = c("A", "B", "AB", "O"))
+blood[1:2]
+```
+We can also store ordered levels, which can show the intensity or rank of each of the levels:
+```{r}
+symptoms <- factor(c("SEVERE", "MILD", "MODERATE"),
+levels = c("MILD", "MODERATE", "SEVERE"),
+ordered = TRUE)
+symptoms
+```
+If we want to know which points are above some level or below some level, we can just use the standard operators:
+```{r}
+symptoms > "MODERATE"
+```
+## Lists
+Used for storing an ordered set of elements. Just accessing the elements of the vectors defined above. We have to write a lot of code to access the infomation of just a ingle patient. Given below:
+```{r}
+subject_name[1]
+temperature[1]
+flu_status[1]
+gender[1]
+blood[1]
+symptoms[1]
+```
+Instead, we create a list element and can access it in one go:
+```{r}
+subject1 <- list(fullname = subject_name[1],
+temperature = temperature[1],
+flu_status = flu_status[1],
+gender = gender[1],
+blood = blood[1],
+symptoms = symptoms[1])
+```
+Hence, now we can display it one shot:
+```{r}
+subject1
+```
+
+To access a particular feature in a particular element in the list:
+```{r}
+subject1[2]
+```
+To return a single list item in its native data type, use double brackets ([[ and ]]) when attempting to select the list component:
+```{r}
+subject1[[2]]
+```
+Acccess a given component using its name can be done as follows:
+```{r}
+subject1$temperature
+```
+Acces multiple components of the list by using the following syntax:
+```{r}
+subject1[c("temperature", "flu_status")]
+```
+Hence, from the above we can construct entire datasets having a number of these elements.
+
+## Dataframes
+Dataframes can be thought of a collection of different datapoints put all together into one single single table kind o structure. Dataframes are very popular in the ```pandas``` library in python - this is similar to a spreadsheet or a database. Here, we create a dataframe for our patient dataset:
+```{r}
+pt_data <- data.frame(subject_name, temperature, flu_status, gender, blood, symptoms, stringsAsFactors = FALSE)
+```
+The ```stringsAsFactors``` argument prevents conversion of the character array to the factor datatype as mentioned below.
+
+Below we display the dataframe that we created above:
+```{r}
+pt_data
+```
+Dataframes are represented in a matrix format, and according to me are very organized forms of storing data.
+To access rows/columns in a dataframe we can do the following:
+```{r}
+pt_data$subject_name
+pt_data[c("temperature", "flu_status")]
+```
+To extract the value in the first row and second column of the patient data frame (the temperature value for John Doe), use the following command:
+```{r}
+pt_data[1, 2]
+```
+The following command will pull data from the first and third rows and the second and fourth columns:
+```{r}
+pt_data[c(1, 3), c(2, 4)]
+```
+For example, to extract all the rows of the first column (this syntax is nothing different, very similar to any other matrix scripting packages - numpy, octave, Matlab, scipy etc.):
+```{r}
+pt_data[, 1]
+```
+To extract all the columns of the first row, use the following command:
+```{r}
+pt_data[1, ]
+```
+To extract everything, i.e. all the elements of the dataframe:
+```{r}
+pt_data[ , ]
+```
+The data can be accessed in a plethora of ways, and we can keep trying to extract the data in any way which is comfortable to the user:
+```{r}
+pt_data[c(1, 3), c("temperature", "gender")]
+pt_data[-2, c(-1, -3, -5, -6)]
+```
+## Matrices and Arrays
+To create a simple ```2*2``` matrix we do the following:
+```{r}
+m <- matrix(c(1, 2, 3, 4), nrow = 2)
+m
+```
+This is equivalent to the matrix produced using ncol = 2:
+```{r}
+m <- matrix(c(1, 2, 3, 4), ncol = 2)
+```
+This difference lies in the row and column major order which is followed. Another matrix can be created as follows:
+```{r}
+m <- matrix(c(1, 2, 3, 4, 5, 6), nrow = 2)
+m
+```
+
+Similarly:
+```{r}
+m <- matrix(c(1, 2, 3, 4, 5, 6), ncol = 2)
+m
+```
+Values can be accessed using the similar style as dataframes - using access by row and column:
+```{r}
+m[1, ]
+m[, 1]
+```
+Saving the data can be done using the following. Also, it is interesting to note that we can save many variables together in the follwing way, and when we load them again, their names will be retained:
+```{r}
+save(x, y, z, file = "mydata.RData")
+```
+And, loading can be done as follows:
+```{r}
+load("mydata.RData")
+```
+The ```save.image()``` command will help save your entire session without having to worry about cherrypicking the vsariables that you want to save. Also, the ```ls()`` command will help you in listing all the variables that are currently in your memory. 
+To eliminate the m and subject1 objects, simply type: 
+```{r}
+rm(m, subject1)
+```
+To clear entire R session:
+```{r}
+rm(list=ls())
+```
+## Importing and saving data from CSV files
+Reading a CSV file:
+```{r}
+pt_data <- read.csv("pt_data.csv", stringsAsFactors = FALSE)
+pt_data
+```
+Save data to a CSV file:
+```{r}
+write.csv(pt_data, file = "pt_data.csv", row.names = FALSE)
+```
+## Exploring and understanding data
+We take an example with the car data from the csv file:
+```{r}
+usedcars <- read.csv("usedcars.csv", stringsAsFactors = FALSE)
+```
+## Exploring the strcuture of the data
+```{r}
+str(usedcars)
+```
+## Exploring numeric values
+```{r}
+summary(usedcars$year)
+```
+Getting the summary of the overall statistics with several numeric variables at the same time
+```{r}
+summary(usedcars[c("price", "mileage")])
+```
+## Obtaining the measures of central tendencies - like mean, median or mode
+Several inbuilt functions R for measuring the central tendencies - examples given below:
+```{r}
+mean(c(36000, 44000, 56000))
+```
+For median we can do the following:
+```{r}
+median(c(36000, 44000, 56000))
+```
+## Finding the quartiles
+Finding the range of the datapoints:
+```{r}
+range(usedcars$price)
+```
+Finding the difference between maximum and minimum of the datapoints:
+```{r}
+diff(range(usedcars$price))
+```
+Finding the inter-quartile range
+```{r}
+IQR(usedcars$price)
+```
+Finding the quartiles of the data. Here the function quantile is used but, by default it gives the quartiles:
+```{r}
+quantile(usedcars$price)
+```
+We can also get the custom ranges using the quantile function:
+```{r}
+quantile(usedcars$price, probs = c(0.01, 0.99))
+```
+Custom range using the quartile function, but using a different way of assigning stuff:
+```{r}
+quantile(usedcars$price, seq(from = 0, to = 1, by = 0.20))
+```
+## Visualizing the numeric data using box-plots:
+Plotting different box-plots of different parameters (self explanatory):
+```{r}
+boxplot(usedcars$price, main="Boxplot of Used Car Prices", ylab="Price ($)")
+```
+```{r}
+boxplot(usedcars$mileage, main="Boxplot of Used Car Mileage",
+ylab="Odometer (mi.)")
+```
+Above we can see that the box and whisker plot provides a lot of information about the nature of the datapoints
+
+## Histograms for data visualization
+The plots are self explanatory:
+```{r}
+hist(usedcars$price, main = "Histogram of Used Car Prices",
+xlab = "Price ($)")
+```
+```{r}
+hist(usedcars$mileage, main = "Histogram of Used Car Mileage",
+xlab = "Odometer (mi.)")
+```
+Histgrams indicates the distribution of the data and is one of the most important parmaters in statistics. Many kinds of distributions can arise from different kinds of data. Gaussian distribution is one of the most importatnt kinds of distribution. We can also find the skewness of the data using the data distribution.
+## Measuring the variance and standard deviation
+Variance and standard deviation of different variables in the data can be calculated as:
+```{r}
+var(usedcars$price)
+sd(usedcars$price)
+var(usedcars$mileage)
+sd(usedcars$mileage)
+```
+Larger variation means that numbers are more spread around the mean and smaller means vice versa:
+## Exploring categorical variables
+Variables that have categories, rather than having continuous values. Finding the number of things with respect to another thing 
+```{r}
+table(usedcars$year)
+```
+```{r}
+table(usedcars$model)
+```
+```{r}
+table(usedcars$color)
+```
+```{r}
+model_table <- table(usedcars$model)
+prop.table(model_table)
+```
+Suppose that we would like to display the results in percentages with a single decimal place:
+```{r}
+color_table <- table(usedcars$color)
+color_pct <- prop.table(color_table) * 100
+round(color_pct, digits = 1)
+```
+## Measuring the mode of a set of data
+Mode means the data point which occurs most frequently. An n-modal distribution will have n peaks in its distribution function. 
+## Using scatter plots
+We can use a scatter plot to plot different datapoints as given below:
+```{r}
+plot(x = usedcars$mileage, y = usedcars$price,
+main = "Scatterplot of Price vs. Mileage",
+xlab = "Used Car Odometer (mi.)",
+ylab = "Used Car Price ($)")
+```
+## Examining relationships – two-way cross-tabulations
+A cross-tabulation is similar to a scatterplot in that it allows you to examine how the values of one variable vary by the values of another. Need this to use the ```CrossTable()``` function.
+```{r}
+install.packages("gmodels")
+```
+Before proceeding with our analysis, let's simplify our project by reducing the
+number of levels in the ```color``` variable:
+```{r}
+usedcars$conservative <- usedcars$color %in% c("Black", "Gray", "Silver", "White")
+```
+Examining the ```table()``` output for our newly created variable, we see that about
+two-thirds of the cars have conservative colors, while one-third do not have
+conservative colors:
+```{r}
+table(usedcars$conservative)
+```
+The CrossTable() command is therefore:
+```{r}
+CrossTable(x = usedcars$model, y = usedcars$conservative)
+```
+There is a lot of information present in the ```CrossTable()``` output. 
+Hence these are the ways to handle the data.
+
