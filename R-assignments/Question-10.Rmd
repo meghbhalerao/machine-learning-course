@@ -1,28 +1,42 @@
 ---
 title: "Quesion 10"
-output: html_notebook
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+  html_notebook: default
 ---
 ## Evaluating Model Performance 
+The goal of evaluating a classification model is to have a better understanding of
+how its performance will extrapolate to future cases. Since it is usually unfeasible
+to test a still-unproven model in a live environment, we typically simulate future
+conditions by asking the model to classify a dataset made of cases that resemble
+what it will be asked to do in the future. By observing the learner's responses to
+this examination, we can learn about its strengths and weaknesses.
 Create the predicted probabilities from the SMS classifier built in Chapter 4.
 Obtain the predicted probabilities
-```{r}
+
+```
 sms_test_prob <- predict(sms_classifier, sms_test, type = "raw")
 head(sms_test_prob)
 ```
 Combine the results into a data frame
-```{r}
+```
 sms_results <- data.frame(actual_type = sms_test_labels,
                           predict_type = sms_test_pred,
                           prob_spam = round(sms_test_prob[ , 2], 5),
                           prob_ham = round(sms_test_prob[ , 1], 5))
 write.csv(sms_results, "sms_results.csv", row.names = FALSE)
 ```
-Confusion matrixes in R
+
 ```{r}
 sms_results <- read.csv("sms_results.csv")
 ```
 
-The first several test cases
+The first several test cases. Each line in this output shows the classifier's predicted probability of spam andham, which always sum up to 1 because these are the only two outcomes.  While constructing an evaluation dataset, it is important to ensure that you are using
+the correct probability for the class level of interest. To avoid confusion, in the
+case of a binary outcome, you might even consider dropping the vector for one
+of the two alternatives.
 ```{r}
 head(sms_results)
 ```
@@ -61,7 +75,20 @@ Error rate = 1 - accuracy
 ```{r}
 1 - 0.9748201
 ```
-Beyond accuracy: other performance measures
+Beyond accuracy: other performance measures: 
+A confusion matrix is a table that categorizes predictions according to whether
+they match the actual value.
+The most common performance measures consider the model's ability to discern one
+class versus all others. The class of interest is known as the positive class, while all
+others are known as negative.
+The relationship between the positive class and negative class predictions can be
+depicted as a 2 x 2 confusion matrix that tabulates whether predictions fall into one
+of the four categories:
+• True Positive (TP): Correctly classified as the class of interest 
+• True Negative (TN): Correctly classified as not the class of interest 
+• False Positive (FP): Incorrectly classified as the class of interest 
+• False Negative (FN): Incorrectly classified as not the class of interest
+
 ```{r}
 library(caret)
 confusionMatrix(sms_results$predict_type, sms_results$actual_type, positive = "spam")
@@ -123,23 +150,34 @@ Visualizing Performance Tradeoffs
 library(pROC)
 sms_roc <- roc(sms_results$actual_type, sms_results$prob_spam)
 ```
-ROC curve for Naive Bayes
+ROC curve for Naive Bayes.
+The Receiver Operating Characteristic (ROC) curve is commonly used to examine
+the trade-off between the detection of true positives, while avoiding the false
+positives.
+The characteristics of a typical ROC diagram are depicted in the following plot.
+Curves are defined on a plot with the proportion of true positives on the vertical axis
+and the proportion of false positives on the horizontal axis. Because these values are
+equivalent to sensitivity and (1 – specificity), respectively, the diagram is also known
+as a sensitivity/specificity plot:
 ```{r}
 plot(sms_roc, main = "ROC curve for SMS spam filter", col = "blue", lwd = 2, legacy.axes = TRUE)
 ```
+The AUC for the SMS classifier is 0.98, which is extremely high. But how do we know whether the model is just as likely to perform well for another dataset? In order to answer such questions, we need to have a better understanding of how far we can extrapolate a model's predictions beyond the test data.
 Compare to kNN 
 ```{r}
 sms_results_knn <- read.csv("sms_results_knn.csv")
 sms_roc_knn <- roc(sms_results$actual_type, sms_results_knn$p_spam)
 plot.new()
-plot(sms_roc_knn, col = "red", lwd = 2, add = TRUE)
+plot(sms_roc_knn, main = "ROC curve for KNN SMS spam filter",col = "red", lwd = 2, add = TRUE)
 ```
 Calculate AUC for Naive Bayes and kNN
 ```{r}
 auc(sms_roc)
 auc(sms_roc_knn)
 ```
-Estimating Future Performance and partitioning data
+Estimating Future Performance and partitioning data. The resubstitution error is not a very useful marker of future performance. For example, a model that used rote memorization to perfectly classify every training
+instance with zero resubstitution error would be unable to generalize its predictions to data it has never seen before. For this reason, the error rate on the training data can be extremely optimistic about a model's future performance.
+
 ```{r}
 library(caret)
 credit <- read.csv("credit.csv")
@@ -151,13 +189,13 @@ credit_train <- credit[random_ids[1:500],]
 credit_validate <- credit[random_ids[501:750], ]
 credit_test <- credit[random_ids[751:1000], ]
 ```
-Using caret function
+Using caret function: The caret package provides a createDataPartition() function that will create partitions based on stratified holdout sampling. The code to create a stratified sample of training and test data for the credit dataset is shown in the following commands.
 ```{r}
 in_train <- createDataPartition(credit$default, p = 0.75, list = FALSE)
 credit_train <- credit[in_train, ]
 credit_test <- credit[-in_train, ]
 ```
-10-fold CV
+10-fold CV: For the holdout method to result in a truly accurate estimate of the future performance, at no time should the performance on the test dataset be allowed to influence the model. It is easy to unknowingly violate this rule by choosing the best model based upon the results of repeated testing. For example, suppose we built several models on the training data, and selected the one with the highest accuracy on the test data. Because we have cherry-picked the best result, the test performance is not an unbiased measure of the performance on unseen data.
 ```{r}
 folds <- createFolds(credit$default, k = 10)
 str(folds)
@@ -171,7 +209,9 @@ library(C50)
 library(irr)
 credit <- read.csv("credit.csv")
 ```
-Use an older random number generator to match the book
+Use an older random number generator to match the book: Finally, we will apply a series of identical steps to the list of folds using the ```lapply()```
+function. As shown in the following code, because there is no existing function that does exactly what we need, we must define our own function to pass to ```lapply()```. Our custom function divides the credit data frame into training and test data, builds a decision tree using the ```C5.0()``` function on the training data, generates a set of
+predictions from the test data, and compares the predicted and actual values using the ```kappa2()``` function:
 ```{r}
 RNGversion("3.5.2") 
 set.seed(123)

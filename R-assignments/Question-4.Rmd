@@ -1,11 +1,16 @@
 ---
 title: "Question-4"
-output: html_notebook
+output:
+  pdf_document: default
+  html_notebook: default
 ---
-
 ## Classification using Naive Bayes 
 Example: Filtering spam SMS messages 
-Step 2: Exploring and preparing the data 
+Classifiers based on Bayesian methods utilize training data to calculate an observed probability of each outcome based on the evidence provided by feature values. When the classifier is later applied to unlabeled data, it uses the observed probabilities to predict the most likely class for the new features. It's a simple idea, but it results in a method that often has results on par with more sophisticated algorithms.   
+
+
+Exploring and preparing the data 
+We will transform our data into a representation known as bag-of-words, which ignores word order and simply provides a variable indicating whether the word appears at all.
 Read the sms data into the sms data frame
 ```{r}
 sms_raw <- read.csv("sms_spam.csv", stringsAsFactors = FALSE)
@@ -23,7 +28,11 @@ Examine the type variable more carefully
 str(sms_raw$type)
 table(sms_raw$type)
 ```
-Build a corpus using the text mining ```(tm)``` package
+SMS messages are strings of text composed of words, spaces, numbers, and
+punctuation. Handling this type of complex data takes a lot of thought and
+effort. One needs to consider how to remove numbers and punctuation; handle uninteresting words such as and, but, and or; and how to break apart sentences into individual words. Thankfully, this functionality has been provided by the members of the R community in a text mining package titled ```tm```.  
+
+Build a corpus using the text mining ```(tm)``` package.
 ```{r}
 library(tm)
 sms_corpus <- VCorpus(VectorSource(sms_raw$text))
@@ -36,7 +45,10 @@ as.character(sms_corpus[[1]])
 lapply(sms_corpus[1:2], as.character)
 ```
 
-Clean up the corpus using ```tm_map()```
+Clean up the corpus using ```tm_map()```  
+
+Our first order of business will be to standardize the messages to use only lowercase characters. To this end, R provides a tolower() function that returns a lowercase version of text strings. In order to apply this function to the corpus, we need to use the tm wrapper function content_transformer() to treat tolower() as a transformation function that can be used to access the corpus. The full command is
+as follows:
 ```{r}
 sms_corpus_clean <- tm_map(sms_corpus, content_transformer(tolower))
 ```
@@ -73,7 +85,9 @@ Eliminate unneeded whitespace
 ```{r}
 sms_corpus_clean <- tm_map(sms_corpus_clean, stripWhitespace)
 ```
-Examine the final clean corpus
+Examine the final clean corpus:  
+
+To view multiple documents, we'll need to use as.character() on several items in the sms_corpus object. To do so, we'll use the lapply() function, which is a part of a family of R functions that applies a procedure to each element of an R data structure. These functions, which include apply() and sapply() among others, are one of the key idioms of the R language
 ```{r}
 lapply(sms_corpus[1:3], as.character)
 lapply(sms_corpus_clean[1:3], as.character)
@@ -126,11 +140,16 @@ prop.table(table(sms_train_labels))
 prop.table(table(sms_test_labels))
 ```
 
-Word cloud visualization
+Word cloud visualization:   
+
+A word cloud is a way to visually depict the frequency at which words appear in text data. The cloud is composed of words scattered somewhat randomly around the figure. Words appearing more often in the text are shown in a larger font, while less common terms are shown in smaller fonts. This type of figures grew in popularity recently, since it provides a way to observe trending topics on social media websites.
 ```{r}
 library(wordcloud)
 wordcloud(sms_corpus_clean, min.freq = 50, random.order = FALSE)
 ```
+A perhaps more interesting visualization involves comparing the clouds for SMS spam and ham. Since we did not construct separate corpora for spam and ham, this is an appropriate time to note a very helpful feature of the ```wordcloud()``` function. Given a vector of raw text strings, it will automatically.      
+
+
 Subset the training data into spam and ham groups
 ```{r}
 spam <- subset(sms_raw, type == "spam")
@@ -141,7 +160,10 @@ sms_dtm_freq_train <- removeSparseTerms(sms_dtm_train, 0.999)
 sms_dtm_freq_train
 
 ```
-Indicator features for frequent words
+As you probably guessed, the spam cloud is on the left. Spam messages include words such as urgent, free, mobile, claim, and stop; these terms do not appear in the ham cloud at all. Instead, ham messages use words such as can, sorry, need, and time. These stark differences suggest that our Naive Bayes model will have some strong key words to differentiate between the classes.  
+
+
+Indicator features for frequent words: 
 ```{r}
 findFreqTerms(sms_dtm_train, 5)
 ```
@@ -168,12 +190,17 @@ sms_train <- apply(sms_dtm_freq_train, MARGIN = 2, convert_counts)
 sms_test  <- apply(sms_dtm_freq_test, MARGIN = 2, convert_counts)
 ```
 
-Step 3: Training a model on the data
+Step 3: Training a model on the data:  
+
+Now that we have transformed the raw SMS messages into a format that can be represented by a statistical model, it is time to apply the Naive Bayes algorithm. The algorithm will use the presence or absence of words to estimate the probability that a given SMS message is spam.
+The Naive Bayes implementation we will employ is in the ```e1071``` package. This package was developed in the statistics department of the Vienna University of Technology (TU Wien), and includes a variety of functions for machine learning. If you have not done so already, be sure to install and load the package using the ```install.packages("e1071")``` and ```library(e1071)``` commands before continuing.
 ```{r}
 library(e1071)
 sms_classifier <- naiveBayes(sms_train, sms_train_labels)
 ```
-Step 4: Evaluating model performance 
+Step 4: Evaluating model performance  
+
+To evaluate the SMS classifier, we need to test its predictions on unseen messages in the test data. Recall that the unseen message features are stored in a matrix named ```sms_test```, while the class labels (spam or ham) are stored in a vector named ```sms_test_labels```. The ```predict()``` function is used to make the predictions. We will store these in a vector named ```sms_test_pred```. We will simply supply the function with the names of our classifier and test dataset, as shown:
 ```{r}
 sms_test_pred <- predict(sms_classifier, sms_test)
 library(gmodels)
@@ -182,6 +209,8 @@ CrossTable(sms_test_pred, sms_test_labels,
            dnn = c('predicted', 'actual'))
 ```
 Step 5: Improving model performance
+
+You may have noticed that we didn't set a value for the Laplace estimator while training our model. This allows words that appeared in zero spam or zero ham messages to have an indisputable say in the classification process. Just because the word "ringtone" only appeared in the spam messages in the training data, it does not mean that every message with this word should be classified as spam. We'll build a Naive Bayes model as done earlier, but this time set laplace = 1:
 ```{r}
 sms_classifier2 <- naiveBayes(sms_train, sms_train_labels, laplace = 1)
 sms_test_pred2 <- predict(sms_classifier2, sms_test)

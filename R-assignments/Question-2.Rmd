@@ -1,6 +1,8 @@
 ---
 title: "Chapter 2"
-output: html_notebook
+output:
+  pdf_document: default
+  html_notebook: default
 ---
 This notebook gives exmaples of different fundamental data structures used in Machine Learning. Also, some basic ways of interpreting data is given like some measures of central tendencies.
 
@@ -164,11 +166,11 @@ m[1, ]
 m[, 1]
 ```
 Saving the data can be done using the following. Also, it is interesting to note that we can save many variables together in the follwing way, and when we load them again, their names will be retained:
-```{r}
+```=
 save(x, y, z, file = "mydata.RData")
 ```
 And, loading can be done as follows:
-```{r}
+```
 load("mydata.RData")
 ```
 The ```save.image()``` command will help save your entire session without having to worry about cherrypicking the vsariables that you want to save. Also, the ```ls()`` command will help you in listing all the variables that are currently in your memory. 
@@ -305,7 +307,7 @@ ylab = "Used Car Price ($)")
 ```
 ## Examining relationships – two-way cross-tabulations
 A cross-tabulation is similar to a scatterplot in that it allows you to examine how the values of one variable vary by the values of another. Need this to use the ```CrossTable()``` function.
-```{r}
+```
 install.packages("gmodels")
 ```
 Before proceeding with our analysis, let's simplify our project by reducing the
@@ -320,7 +322,7 @@ conservative colors:
 table(usedcars$conservative)
 ```
 The CrossTable() command is therefore:
-```{r}
+```
 CrossTable(x = usedcars$model, y = usedcars$conservative)
 ```
 There is a lot of information present in the ```CrossTable()``` output. 
