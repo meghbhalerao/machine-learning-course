@@ -6,7 +6,7 @@ This repository contains the codes for EE871 **Machine Learning Course** at NITK
 ## Steps to run the codes
 
 ## Dependencies
-- [`pytorch`](www.pytorch.org)
+- [`pytorch`](https://pytorch.org)
 - [`neurolab`](https://pypi.org/project/neurolab/)
 - [`scikit-learn`](https://scikit-learn.org/stable/)
 
