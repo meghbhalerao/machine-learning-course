@@ -9,4 +9,3 @@ Please navigate to the individual folders and run the codes.
 - [`neurolab`](https://pypi.org/project/neurolab/)
 - [`scikit-learn`](https://scikit-learn.org/stable/)
 
-## References
